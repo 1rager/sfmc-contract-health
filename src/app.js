@@ -87,7 +87,7 @@ export default {
     // Histórico de uso para gráfico de evolução
     if (path === "/api/usage") {
       const { results } = await env.DB.prepare(
-        `SELECT * FROM daily_usage WHERE tenant_id = ? ORDER BY date DESC LIMIT 30`
+        `SELECT * FROM daily_usage WHERE tenant_id = ? ORDER BY date ASC LIMIT 30`
       )
         .bind(1)
         .all();

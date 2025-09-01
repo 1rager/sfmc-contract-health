@@ -30,24 +30,25 @@ export default function App() {
     ]).then(([limitsData, usageData]) => {
       setLimits(limitsData.limits || {});
       setUsage(limitsData.usage || {});
+
+      // Defensive: ensure limits are numbers and > 0
+      const safeLimits = {
+        AllContacts: Number(limitsData.limits?.AllContacts) || 1,
+        Email: Number(limitsData.limits?.Email) || 1,
+        SMS: Number(limitsData.limits?.SMS) || 1,
+        WhatsApp: Number(limitsData.limits?.WhatsApp) || 1,
+        CloudPages: Number(limitsData.limits?.CloudPages) || 1,
+      };
+
       const hist = (usageData.usage || []).map(row => ({
         date: row.date,
-        contacts: row.all_contacts && limitsData.limits.AllContacts
-          ? Math.round((row.all_contacts / limitsData.limits.AllContacts) * 100 * 100) / 100
-          : 0,
-        email: row.email_push_sent && limitsData.limits.Email
-          ? Math.round((row.email_push_sent / limitsData.limits.Email) * 100 * 100) / 100
-          : 0,
-        sms: row.sms_sent && limitsData.limits.SMS
-          ? Math.round((row.sms_sent / limitsData.limits.SMS) * 100 * 100) / 100
-          : 0,
-        wa: row.whatsapp_sent && limitsData.limits.WhatsApp
-          ? Math.round((row.whatsapp_sent / limitsData.limits.WhatsApp) * 100 * 100) / 100
-          : 0,
-        cp: row.cloudpages_prints && limitsData.limits.CloudPages
-          ? Math.round((row.cloudpages_prints / limitsData.limits.CloudPages) * 100 * 100) / 100
-          : 0,
+        contacts: Math.round((Number(row.all_contacts) / safeLimits.AllContacts) * 100 * 100) / 100,
+        email: Math.round((Number(row.email_push_sent) / safeLimits.Email) * 100 * 100) / 100,
+        sms: Math.round((Number(row.sms_sent) / safeLimits.SMS) * 100 * 100) / 100,
+        wa: Math.round((Number(row.whatsapp_sent) / safeLimits.WhatsApp) * 100 * 100) / 100,
+        cp: Math.round((Number(row.cloudpages_prints) / safeLimits.CloudPages) * 100 * 100) / 100,
       }));
+
       setHistory(hist);
       setLoading(false);
     });
@@ -71,6 +72,8 @@ export default function App() {
         fetchData();
       });
   };
+
+  console.log("Histórico para o gráfico:", history);
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -151,24 +154,24 @@ export default function App() {
 
         {/* Trend */}
         <Card>
-          <div className="text-sm font-medium text-gray-600 uppercase tracking-wider mb-2">Evolução do consumo (% do limite)</div>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={history}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="contacts" name="All Contacts" stroke="#6366f1" />
-                <Line type="monotone" dataKey="email" name="Email/Push" stroke="#4f46e5" />
-                <Line type="monotone" dataKey="sms" name="SMS" stroke="#10b981" />
-                <Line type="monotone" dataKey="wa" name="WhatsApp" stroke="#f59e42" />
-                <Line type="monotone" dataKey="cp" name="CloudPages" stroke="#6366f1" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
+  <div className="text-sm font-medium text-gray-600 uppercase tracking-wider mb-2">Evolução do consumo (% do limite)</div>
+  <div style={{ height: 320 }}>
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart data={history}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="date" />
+        <YAxis domain={[0, 100]} tickFormatter={tick => `${tick}%`} />
+        <Tooltip formatter={value => `${value}%`} />
+        <Legend />
+        <Line type="monotone" dataKey="contacts" name="All Contacts" stroke="#6366f1" />
+        <Line type="monotone" dataKey="email" name="Email/Push" stroke="#4f46e5" />
+        <Line type="monotone" dataKey="sms" name="SMS" stroke="#10b981" />
+        <Line type="monotone" dataKey="wa" name="WhatsApp" stroke="#f59e42" />
+        <Line type="monotone" dataKey="cp" name="CloudPages" stroke="#6366f1" />
+      </LineChart>
+    </ResponsiveContainer>
+  </div>
+</Card>
       </div>
     </div>
   );
