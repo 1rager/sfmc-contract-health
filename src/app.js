@@ -1,13 +1,30 @@
+function withCors(response) {
+  response.headers.set("Access-Control-Allow-Origin", "*");
+  response.headers.set(
+    "Access-Control-Allow-Methods",
+    "GET, PUT, POST, OPTIONS"
+  );
+  response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+  return response;
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname;
 
+    // Preflight CORS
+    if (request.method === "OPTIONS") {
+      return withCors(new Response(null, { status: 204 }));
+    }
+
     // Health check
     if (path === "/") {
-      return Response.json({
-        message: "✅ SFMC Contract Health API is running!",
-      });
+      return withCors(
+        Response.json({
+          message: "✅ SFMC Contract Health API is running!",
+        })
+      );
     }
 
     // Lista de tenants
@@ -15,7 +32,7 @@ export default {
       const { results } = await env.DB.prepare(
         `SELECT id, name, sfmc_subdomain FROM tenants`
       ).all();
-      return Response.json(results);
+      return withCors(Response.json(results));
     }
 
     // Atualiza limites contratuais via PUT
@@ -39,7 +56,7 @@ export default {
           1
         )
         .run();
-      return Response.json({ success: true });
+      return withCors(Response.json({ success: true }));
     }
 
     // Consulta limites + uso atual
@@ -81,7 +98,7 @@ export default {
         CloudPages: Number(usageRaw.CloudPages) || 0,
       };
 
-      return Response.json({ limits, usage });
+      return withCors(Response.json({ limits, usage }));
     }
 
     // Histórico de uso para gráfico de evolução
@@ -91,9 +108,9 @@ export default {
       )
         .bind(1)
         .all();
-      return Response.json({ usage: results });
+      return withCors(Response.json({ usage: results }));
     }
 
-    return new Response("❌ Not found", { status: 404 });
+    return withCors(new Response("❌ Not found", { status: 404 }));
   },
 };
