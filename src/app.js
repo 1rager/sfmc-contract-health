@@ -1,5 +1,7 @@
-function withCors(response) {
-  response.headers.set("Access-Control-Allow-Origin", "*");
+function withCors(response, request) {
+  const origin = request.headers.get("Origin") || "*";
+  response.headers.set("Access-Control-Allow-Origin", origin);
+  response.headers.set("Vary", "Origin");
   response.headers.set(
     "Access-Control-Allow-Methods",
     "GET, PUT, POST, OPTIONS"
@@ -15,7 +17,7 @@ export default {
 
     // Preflight CORS
     if (request.method === "OPTIONS") {
-      return withCors(new Response(null, { status: 204 }));
+      return withCors(new Response(null, { status: 204 }), request);
     }
 
     // Health check
@@ -23,7 +25,8 @@ export default {
       return withCors(
         Response.json({
           message: "✅ SFMC Contract Health API is running!",
-        })
+        }),
+        request
       );
     }
 
@@ -32,7 +35,7 @@ export default {
       const { results } = await env.DB.prepare(
         `SELECT id, name, sfmc_subdomain FROM tenants`
       ).all();
-      return withCors(Response.json(results));
+      return withCors(Response.json(results), request);
     }
 
     // Atualiza limites contratuais via PUT
@@ -56,7 +59,7 @@ export default {
           1
         )
         .run();
-      return withCors(Response.json({ success: true }));
+      return withCors(Response.json({ success: true }), request);
     }
 
     // Consulta limites + uso atual
@@ -98,7 +101,7 @@ export default {
         CloudPages: Number(usageRaw.CloudPages) || 0,
       };
 
-      return withCors(Response.json({ limits, usage }));
+      return withCors(Response.json({ limits, usage }), request);
     }
 
     // Histórico de uso para gráfico de evolução
@@ -108,9 +111,9 @@ export default {
       )
         .bind(1)
         .all();
-      return withCors(Response.json({ usage: results }));
+      return withCors(Response.json({ usage: results }), request);
     }
 
-    return withCors(new Response("❌ Not found", { status: 404 }));
+    return withCors(new Response("❌ Not found", { status: 404 }), request);
   },
 };
