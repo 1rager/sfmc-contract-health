@@ -21,12 +21,13 @@ export default function App() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-
+  const apiUrl = import.meta.env.VITE_API_URL;
+  
   const fetchData = () => {
     setLoading(true);
     Promise.all([
-      fetch("/api/limits").then(res => res.json()),
-      fetch("/api/usage").then(res => res.json()),
+      fetch(`${apiUrl}/limits`).then(res => res.json()),
+      fetch(`${apiUrl}/usage`).then(res => res.json()),
     ]).then(([limitsData, usageData]) => {
       setLimits(limitsData.limits || {});
       setUsage(limitsData.usage || {});
@@ -61,19 +62,17 @@ export default function App() {
 
   // Função para salvar limites
   const handleSaveLimits = (newLimits) => {
-    fetch("/api/limits", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newLimits),
-    })
-      .then(res => res.json())
-      .then(() => {
-        setSettingsOpen(false);
-        fetchData();
-      });
-  };
-
-  console.log("Histórico para o gráfico:", history);
+  fetch(`${apiUrl}/limits`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(newLimits),
+  })
+    .then(res => res.json())
+    .then(() => {
+      setSettingsOpen(false);
+      fetchData();
+    });
+};
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
