@@ -1,6 +1,6 @@
 function withCors(response, request) {
   const origin = request.headers.get("Origin") || "*";
-  // Clone body and status
+  // Cria novo Response para garantir que os headers sejam aplicados
   const newResponse = new Response(response.body, response);
   newResponse.headers.set("Access-Control-Allow-Origin", origin);
   newResponse.headers.set("Vary", "Origin");
