@@ -23,13 +23,16 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const apiUrl = import.meta.env.VITE_API_URL;
-  
-  Promise.all([
-  fetch(`${apiUrl}/api/limits`).then(res => res.json()),
-  fetch(`${apiUrl}/api/usage`).then(res => res.json())
-]).then(([limitsData, usageData]) => {
-  setLimits(limitsData.limits || {});
-  setUsage(limitsData.usage || {});
+
+  // Função para buscar dados
+  const fetchData = () => {
+    setLoading(true);
+    Promise.all([
+      fetch(`${apiUrl}/api/limits`).then(res => res.json()),
+      fetch(`${apiUrl}/api/usage`).then(res => res.json())
+    ]).then(([limitsData, usageData]) => {
+      setLimits(limitsData.limits || {});
+      setUsage(limitsData.usage || {});
 
       // Defensive: ensure limits are numbers and > 0
       const safeLimits = {
@@ -51,7 +54,7 @@ export default function App() {
 
       setHistory(hist);
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -61,17 +64,17 @@ export default function App() {
 
   // Função para salvar limites
   const handleSaveLimits = (newLimits) => {
-  fetch(`${apiUrl}/api/limits`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(newLimits),
-  })
-    .then(res => res.json())
-    .then(() => {
-      setSettingsOpen(false);
-      fetchData();
-    });
-};
+    fetch(`${apiUrl}/api/limits`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newLimits),
+    })
+      .then(res => res.json())
+      .then(() => {
+        setSettingsOpen(false);
+        fetchData();
+      });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -152,24 +155,24 @@ export default function App() {
 
         {/* Trend */}
         <Card>
-  <div className="text-sm font-medium text-gray-600 uppercase tracking-wider mb-2">Evolução do consumo (% do limite)</div>
-  <div style={{ height: 320 }}>
-    <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={history}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="date" />
-        <YAxis domain={[0, 100]} tickFormatter={tick => `${tick}%`} />
-        <Tooltip formatter={value => `${value}%`} />
-        <Legend />
-        <Line type="monotone" dataKey="contacts" name="All Contacts" stroke="#6366f1" />
-        <Line type="monotone" dataKey="email" name="Email/Push" stroke="#4f46e5" />
-        <Line type="monotone" dataKey="sms" name="SMS" stroke="#10b981" />
-        <Line type="monotone" dataKey="wa" name="WhatsApp" stroke="#f59e42" />
-        <Line type="monotone" dataKey="cp" name="CloudPages" stroke="#6366f1" />
-      </LineChart>
-    </ResponsiveContainer>
-  </div>
-</Card>
+          <div className="text-sm font-medium text-gray-600 uppercase tracking-wider mb-2">Evolução do consumo (% do limite)</div>
+          <div style={{ height: 320 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={history}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis domain={[0, 100]} tickFormatter={tick => `${tick}%`} />
+                <Tooltip formatter={value => `${value}%`} />
+                <Legend />
+                <Line type="monotone" dataKey="contacts" name="All Contacts" stroke="#6366f1" />
+                <Line type="monotone" dataKey="email" name="Email/Push" stroke="#4f46e5" />
+                <Line type="monotone" dataKey="sms" name="SMS" stroke="#10b981" />
+                <Line type="monotone" dataKey="wa" name="WhatsApp" stroke="#f59e42" />
+                <Line type="monotone" dataKey="cp" name="CloudPages" stroke="#6366f1" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
       </div>
     </div>
   );
