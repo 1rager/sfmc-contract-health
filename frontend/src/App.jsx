@@ -24,14 +24,12 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const apiUrl = import.meta.env.VITE_API_URL;
   
-  const fetchData = () => {
-    setLoading(true);
-    Promise.all([
-      fetch(`${apiUrl}/api/limits`),
-      fetch(`${apiUrl}/api/usage`)
-    ]).then(([limitsData, usageData]) => {
-      setLimits(limitsData.limits || {});
-      setUsage(limitsData.usage || {});
+  Promise.all([
+  fetch(`${apiUrl}/api/limits`).then(res => res.json()),
+  fetch(`${apiUrl}/api/usage`).then(res => res.json())
+]).then(([limitsData, usageData]) => {
+  setLimits(limitsData.limits || {});
+  setUsage(limitsData.usage || {});
 
       // Defensive: ensure limits are numbers and > 0
       const safeLimits = {
