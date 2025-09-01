@@ -27,8 +27,8 @@ export default function App() {
   const fetchData = () => {
     setLoading(true);
     Promise.all([
-      fetch(`${apiUrl}/limits`).then(res => res.json()),
-      fetch(`${apiUrl}/usage`).then(res => res.json()),
+      fetch(`${apiUrl}/api/limits`),
+      fetch(`${apiUrl}/api/usage`)
     ]).then(([limitsData, usageData]) => {
       setLimits(limitsData.limits || {});
       setUsage(limitsData.usage || {});
@@ -63,7 +63,7 @@ export default function App() {
 
   // Função para salvar limites
   const handleSaveLimits = (newLimits) => {
-  fetch(`${apiUrl}/limits`, {
+  fetch(`${apiUrl}/api/limits`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(newLimits),
