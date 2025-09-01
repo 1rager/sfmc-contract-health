@@ -1,14 +1,16 @@
 function withCors(response, request) {
-  const origin = request.headers.get("Origin");
-  response.headers.set("Access-Control-Allow-Origin", origin || "*");
-  response.headers.set("Vary", "Origin");
-  response.headers.set(
+  const origin = request.headers.get("Origin") || "*";
+  // Clone body and status
+  const newResponse = new Response(response.body, response);
+  newResponse.headers.set("Access-Control-Allow-Origin", origin);
+  newResponse.headers.set("Vary", "Origin");
+  newResponse.headers.set(
     "Access-Control-Allow-Methods",
     "GET, PUT, POST, OPTIONS"
   );
-  response.headers.set("Access-Control-Allow-Headers", "Content-Type");
-  response.headers.set("Cache-Control", "no-store");
-  return response;
+  newResponse.headers.set("Access-Control-Allow-Headers", "Content-Type");
+  newResponse.headers.set("Cache-Control", "no-store");
+  return newResponse;
 }
 
 export default {
