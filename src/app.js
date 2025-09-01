@@ -1,4 +1,3 @@
-//Qualquer alteracao
 function withCors(response, request) {
   const origin = request.headers.get("Origin") || "*";
   // Cria novo Response para garantir que os headers sejam aplicados
